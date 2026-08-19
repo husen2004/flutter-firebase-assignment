@@ -21,7 +21,7 @@ jobs:
         run: |
           rm -rf /tmp/schoolivr
           mkdir -p /tmp/schoolivr
-          unzip -q school_ivr_android_v3_A51_android13_source.zip -d /tmp/schoolivr
+          tar -xJf school_ivr_v3.tar.xz -C /tmp/schoolivr
       - name: Build debug APK
         working-directory: /tmp/schoolivr/school_ivr_android_v3_A51_android13
         run: gradle assembleDebug --stacktrace
