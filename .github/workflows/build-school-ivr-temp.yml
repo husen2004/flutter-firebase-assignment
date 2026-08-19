@@ -18,171 +18,64 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
-
       - name: Generate clean zero-permission Android project
         run: |
           rm -rf /tmp/schoolivr_v4
           mkdir -p /tmp/schoolivr_v4/app/src/main/java/com/school/ivrsmart
-
           cat > /tmp/schoolivr_v4/settings.gradle <<'EOF'
-          pluginManagement {
-              repositories {
-                  google()
-                  mavenCentral()
-                  gradlePluginPortal()
-              }
-          }
-          dependencyResolutionManagement {
-              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-              repositories {
-                  google()
-                  mavenCentral()
-              }
-          }
+          pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
+          dependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }
           rootProject.name = 'SchoolIVRSmart'
           include ':app'
           EOF
-
           cat > /tmp/schoolivr_v4/build.gradle <<'EOF'
-          plugins {
-              id 'com.android.application' version '8.5.2' apply false
-          }
+          plugins { id 'com.android.application' version '8.5.2' apply false }
           EOF
-
           cat > /tmp/schoolivr_v4/gradle.properties <<'EOF'
           org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
           android.useAndroidX=true
           EOF
-
           cat > /tmp/schoolivr_v4/app/build.gradle <<'EOF'
           plugins { id 'com.android.application' }
-          android {
-              namespace 'com.school.ivrsmart'
-              compileSdk 35
-              defaultConfig {
-                  applicationId 'com.school.ivrsmart'
-                  minSdk 26
-                  targetSdk 35
-                  versionCode 4
-                  versionName '4.0-smart-safe'
-              }
-          }
+          android { namespace 'com.school.ivrsmart'; compileSdk 35; defaultConfig { applicationId 'com.school.ivrsmart'; minSdk 26; targetSdk 35; versionCode 4; versionName '4.0-smart-safe' } }
           EOF
-
           cat > /tmp/schoolivr_v4/app/src/main/AndroidManifest.xml <<'EOF'
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-              <application android:allowBackup="true" android:label="School IVR Smart" android:supportsRtl="true" android:theme="@android:style/Theme.Material.Light.NoActionBar">
-                  <activity android:name=".MainActivity" android:exported="true" android:screenOrientation="portrait">
-                      <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.LAUNCHER" /></intent-filter>
-                  </activity>
-                  <activity android:name=".DialerActivity" android:exported="true">
-                      <intent-filter><action android:name="android.intent.action.DIAL" /><category android:name="android.intent.category.DEFAULT" /><data android:scheme="tel" /></intent-filter>
-                      <intent-filter><action android:name="android.intent.action.DIAL" /><category android:name="android.intent.category.DEFAULT" /></intent-filter>
-                  </activity>
-                  <service android:name=".SchoolInCallService" android:permission="android.permission.BIND_INCALL_SERVICE" android:exported="true">
-                      <meta-data android:name="android.telecom.IN_CALL_SERVICE_UI" android:value="true" />
-                      <meta-data android:name="android.telecom.IN_CALL_SERVICE_RINGING" android:value="false" />
-                      <intent-filter><action android:name="android.telecom.InCallService" /></intent-filter>
-                  </service>
-              </application>
+            <application android:allowBackup="true" android:label="School IVR Smart" android:supportsRtl="true" android:theme="@android:style/Theme.Material.Light.NoActionBar">
+              <activity android:name=".MainActivity" android:exported="true" android:screenOrientation="portrait"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity>
+              <activity android:name=".DialerActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.DIAL"/><category android:name="android.intent.category.DEFAULT"/><data android:scheme="tel"/></intent-filter><intent-filter><action android:name="android.intent.action.DIAL"/><category android:name="android.intent.category.DEFAULT"/></intent-filter></activity>
+              <service android:name=".SchoolInCallService" android:permission="android.permission.BIND_INCALL_SERVICE" android:exported="true"><meta-data android:name="android.telecom.IN_CALL_SERVICE_UI" android:value="true"/><meta-data android:name="android.telecom.IN_CALL_SERVICE_RINGING" android:value="false"/><intent-filter><action android:name="android.telecom.InCallService"/></intent-filter></service>
+            </application>
           </manifest>
           EOF
-
           cat > /tmp/schoolivr_v4/app/src/main/java/com/school/ivrsmart/SettingsRepository.java <<'EOF'
           package com.school.ivrsmart;
-          import android.content.Context;
-          import android.content.SharedPreferences;
-          public class SettingsRepository {
-              private final SharedPreferences p;
-              SettingsRepository(Context c) { p = c.getSharedPreferences("school_ivr", Context.MODE_PRIVATE); }
-              boolean autoAnswer() { return p.getBoolean("auto", false); }
-              boolean speakerPrompt() { return p.getBoolean("speaker", false); }
-              int delay() { return p.getInt("delay", 2); }
-              String welcome() { return p.getString("welcome", "مرحباً بكم في المدرسة. اضغط 1 للرسوم، 2 للمواعيد، 3 للتسجيل."); }
-              String fees() { return p.getString("fees", "للاستفسار عن الرسوم يرجى مراجعة الإدارة المالية."); }
-              String schedule() { return p.getString("schedule", "مواعيد الدوام والحصص يتم تحديثها من إدارة المدرسة."); }
-              String registration() { return p.getString("registration", "للتسجيل يرجى مراجعة إدارة المدرسة."); }
-              void save(boolean auto, boolean speaker, int delay, String welcome, String fees, String schedule, String registration) {
-                  p.edit().putBoolean("auto", auto).putBoolean("speaker", speaker).putInt("delay", delay).putString("welcome", welcome).putString("fees", fees).putString("schedule", schedule).putString("registration", registration).apply();
-              }
-          }
+          import android.content.Context; import android.content.SharedPreferences;
+          public class SettingsRepository { private final SharedPreferences p; SettingsRepository(Context c){p=c.getSharedPreferences("school_ivr",Context.MODE_PRIVATE);} boolean autoAnswer(){return p.getBoolean("auto",false);} boolean speakerPrompt(){return p.getBoolean("speaker",false);} int delay(){return p.getInt("delay",2);} String welcome(){return p.getString("welcome","مرحباً بكم في المدرسة. اضغط 1 للرسوم، 2 للمواعيد، 3 للتسجيل.");} String fees(){return p.getString("fees","للاستفسار عن الرسوم يرجى مراجعة الإدارة المالية.");} String schedule(){return p.getString("schedule","مواعيد الدوام والحصص يتم تحديثها من إدارة المدرسة.");} String registration(){return p.getString("registration","للتسجيل يرجى مراجعة إدارة المدرسة.");} void save(boolean a,boolean s,int d,String w,String f,String sc,String r){p.edit().putBoolean("auto",a).putBoolean("speaker",s).putInt("delay",d).putString("welcome",w).putString("fees",f).putString("schedule",sc).putString("registration",r).apply();} }
           EOF
-
           cat > /tmp/schoolivr_v4/app/src/main/java/com/school/ivrsmart/MainActivity.java <<'EOF'
           package com.school.ivrsmart;
-          import android.app.Activity;
-          import android.app.AlertDialog;
-          import android.app.role.RoleManager;
-          import android.content.Intent;
-          import android.graphics.Color;
-          import android.os.Build;
-          import android.os.Bundle;
-          import android.speech.tts.TextToSpeech;
-          import android.telecom.TelecomManager;
-          import android.view.Gravity;
-          import android.view.View;
-          import android.widget.Button;
-          import android.widget.EditText;
-          import android.widget.LinearLayout;
-          import android.widget.ScrollView;
-          import android.widget.Switch;
-          import android.widget.TextView;
-          import android.widget.Toast;
-          import java.util.Locale;
-          public class MainActivity extends Activity {
-              private SettingsRepository repo;
-              private Switch autoAnswer, speakerPrompt;
-              private EditText delay, welcome, fees, schedule, registration;
-              private TextView status;
-              private TextToSpeech tts;
-              @Override protected void onCreate(Bundle b) { super.onCreate(b); repo = new SettingsRepository(this); buildUi(); updateStatus(); }
-              private TextView text(String s, int size) { TextView v = new TextView(this); v.setText(s); v.setTextSize(size); v.setTextColor(Color.rgb(20,34,55)); v.setPadding(4,10,4,6); v.setGravity(Gravity.RIGHT); return v; }
-              private EditText edit(String s) { EditText e = new EditText(this); e.setText(s); e.setTextSize(16); e.setGravity(Gravity.RIGHT); e.setMinLines(2); e.setPadding(10,8,10,8); return e; }
-              private Button button(String s) { Button b = new Button(this); b.setText(s); b.setAllCaps(false); return b; }
-              private void buildUi() {
-                  ScrollView scroll = new ScrollView(this); LinearLayout root = new LinearLayout(this); root.setOrientation(LinearLayout.VERTICAL); root.setPadding(22,28,22,34); root.setLayoutDirection(View.LAYOUT_DIRECTION_RTL); scroll.addView(root);
-                  TextView title = text("نظام الرد الآلي المدرسي — V4 Smart",25); title.setGravity(Gravity.CENTER); title.setTypeface(null,1); root.addView(title);
-                  TextView safe = text("وضع آمن: أول تشغيل بدون أي طلب أذونات",16); safe.setGravity(Gravity.CENTER); safe.setTextColor(Color.rgb(20,120,70)); root.addView(safe);
-                  Button test = button("اختبار قائمة الرد الآلي — بدون صلاحيات"); root.addView(test); test.setOnClickListener(v -> showIvrTest());
-                  Button phoneMode = button("تفعيل وضع الهاتف — اختياري"); root.addView(phoneMode); phoneMode.setOnClickListener(v -> requestDialerRole());
-                  autoAnswer = new Switch(this); autoAnswer.setText("الرد التلقائي عند تفعيل وضع الهاتف"); autoAnswer.setTextSize(17); autoAnswer.setChecked(repo.autoAnswer()); root.addView(autoAnswer);
-                  speakerPrompt = new Switch(this); speakerPrompt.setText("تشغيل رسالة الترحيب على مكبر الهاتف بعد الرد — تجريبي"); speakerPrompt.setTextSize(16); speakerPrompt.setChecked(repo.speakerPrompt()); root.addView(speakerPrompt);
-                  root.addView(text("زمن الانتظار قبل الرد بالثواني",15)); delay = new EditText(this); delay.setText(String.valueOf(repo.delay())); delay.setInputType(2); delay.setGravity(Gravity.RIGHT); root.addView(delay);
-                  root.addView(text("رسالة الترحيب",15)); welcome=edit(repo.welcome()); root.addView(welcome);
-                  root.addView(text("نص الرسوم",15)); fees=edit(repo.fees()); root.addView(fees);
-                  root.addView(text("نص المواعيد",15)); schedule=edit(repo.schedule()); root.addView(schedule);
-                  root.addView(text("نص التسجيل",15)); registration=edit(repo.registration()); root.addView(registration);
-                  Button save=button("حفظ الإعدادات"); root.addView(save); save.setOnClickListener(v -> save());
-                  status=text("",14); status.setPadding(4,18,4,20); root.addView(status); setContentView(scroll);
-              }
-              private void save() { int d=2; try { d=Integer.parseInt(delay.getText().toString().trim()); } catch(Exception ignored){} d=Math.max(0,Math.min(20,d)); repo.save(autoAnswer.isChecked(),speakerPrompt.isChecked(),d,welcome.getText().toString().trim(),fees.getText().toString().trim(),schedule.getText().toString().trim(),registration.getText().toString().trim()); Toast.makeText(this,"تم الحفظ",Toast.LENGTH_SHORT).show(); updateStatus(); }
-              private void showIvrTest() { String[] items={"1 — الرسوم","2 — المواعيد","3 — التسجيل"}; speak(repo.welcome()); new AlertDialog.Builder(this).setTitle("اختبار القائمة").setItems(items,(d,which)->{ String msg=which==0?repo.fees():which==1?repo.schedule():repo.registration(); speak(msg); new AlertDialog.Builder(this).setMessage(msg).setPositiveButton("حسناً",null).show(); }).setNegativeButton("إغلاق",null).show(); }
-              private void speak(String s) { if(tts!=null){try{tts.stop();tts.shutdown();}catch(Exception ignored){}} tts=new TextToSpeech(this,st->{ if(st==TextToSpeech.SUCCESS){tts.setLanguage(new Locale("ar"));tts.speak(s,TextToSpeech.QUEUE_FLUSH,null,"ivr_test");}}); }
-              private void requestDialerRole() { if(Build.VERSION.SDK_INT>=29){ RoleManager rm=getSystemService(RoleManager.class); if(rm!=null&&rm.isRoleAvailable(RoleManager.ROLE_DIALER)){ if(rm.isRoleHeld(RoleManager.ROLE_DIALER)) Toast.makeText(this,"وضع الهاتف مفعّل بالفعل",Toast.LENGTH_SHORT).show(); else startActivityForResult(rm.createRequestRoleIntent(RoleManager.ROLE_DIALER),44); }} else { TelecomManager tm=(TelecomManager)getSystemService(TELECOM_SERVICE); Intent i=new Intent(TelecomManager.ACTION_CHANGE_DEFAULT_DIALER); i.putExtra(TelecomManager.EXTRA_CHANGE_DEFAULT_DIALER_PACKAGE_NAME,getPackageName()); startActivityForResult(i,44); } }
-              private boolean isDefaultDialer() { if(Build.VERSION.SDK_INT>=29){ RoleManager rm=getSystemService(RoleManager.class); return rm!=null&&rm.isRoleHeld(RoleManager.ROLE_DIALER); } TelecomManager tm=(TelecomManager)getSystemService(TELECOM_SERVICE); return tm!=null&&getPackageName().equals(tm.getDefaultDialerPackage()); }
-              private void updateStatus() { status.setText("حالة النسخة:\n• لا توجد صلاحيات ميكروفون.\n• لا توجد خدمة إمكانية وصول.\n• لا توجد صلاحيات إشعارات أو قراءة الهاتف.\n• وضع الهاتف: "+(isDefaultDialer()?"مفعّل ✓":"غير مفعّل")+"\n\nلن يظهر أي طلب عند أول تشغيل. زر تفعيل وضع الهاتف وحده يفتح اختيار النظام عند ضغطك عليه."); }
-              @Override protected void onResume(){super.onResume();if(status!=null)updateStatus();}
-              @Override protected void onDestroy(){if(tts!=null){try{tts.shutdown();}catch(Exception ignored){}}super.onDestroy();}
-          }
+          import android.app.*; import android.app.role.RoleManager; import android.content.*; import android.graphics.Color; import android.os.*; import android.speech.tts.TextToSpeech; import android.telecom.TelecomManager; import android.view.*; import android.widget.*; import java.util.Locale;
+          public class MainActivity extends Activity { private SettingsRepository repo; private Switch autoAnswer,speakerPrompt; private EditText delay,welcome,fees,schedule,registration; private TextView status; private TextToSpeech tts;
+          @Override protected void onCreate(Bundle b){super.onCreate(b);repo=new SettingsRepository(this);buildUi();updateStatus();}
+          private TextView text(String s,int z){TextView v=new TextView(this);v.setText(s);v.setTextSize(z);v.setTextColor(Color.rgb(20,34,55));v.setPadding(4,10,4,6);v.setGravity(Gravity.RIGHT);return v;}
+          private EditText edit(String s){EditText e=new EditText(this);e.setText(s);e.setTextSize(16);e.setGravity(Gravity.RIGHT);e.setMinLines(2);e.setPadding(10,8,10,8);return e;}
+          private Button button(String s){Button b=new Button(this);b.setText(s);b.setAllCaps(false);return b;}
+          private void buildUi(){ScrollView scroll=new ScrollView(this);LinearLayout root=new LinearLayout(this);root.setOrientation(LinearLayout.VERTICAL);root.setPadding(22,28,22,34);root.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);scroll.addView(root);TextView title=text("نظام الرد الآلي المدرسي — V4 Smart",25);title.setGravity(Gravity.CENTER);title.setTypeface(null,1);root.addView(title);TextView safe=text("وضع آمن: أول تشغيل بدون أي طلب أذونات",16);safe.setGravity(Gravity.CENTER);safe.setTextColor(Color.rgb(20,120,70));root.addView(safe);Button test=button("اختبار قائمة الرد الآلي — بدون صلاحيات");root.addView(test);test.setOnClickListener(v->showIvrTest());Button phone=button("تفعيل وضع الهاتف — اختياري");root.addView(phone);phone.setOnClickListener(v->requestDialerRole());autoAnswer=new Switch(this);autoAnswer.setText("الرد التلقائي عند تفعيل وضع الهاتف");autoAnswer.setTextSize(17);autoAnswer.setChecked(repo.autoAnswer());root.addView(autoAnswer);speakerPrompt=new Switch(this);speakerPrompt.setText("تشغيل رسالة الترحيب على مكبر الهاتف بعد الرد — تجريبي");speakerPrompt.setTextSize(16);speakerPrompt.setChecked(repo.speakerPrompt());root.addView(speakerPrompt);root.addView(text("زمن الانتظار قبل الرد بالثواني",15));delay=new EditText(this);delay.setText(String.valueOf(repo.delay()));delay.setInputType(2);delay.setGravity(Gravity.RIGHT);root.addView(delay);root.addView(text("رسالة الترحيب",15));welcome=edit(repo.welcome());root.addView(welcome);root.addView(text("نص الرسوم",15));fees=edit(repo.fees());root.addView(fees);root.addView(text("نص المواعيد",15));schedule=edit(repo.schedule());root.addView(schedule);root.addView(text("نص التسجيل",15));registration=edit(repo.registration());root.addView(registration);Button save=button("حفظ الإعدادات");root.addView(save);save.setOnClickListener(v->save());status=text("",14);status.setPadding(4,18,4,20);root.addView(status);setContentView(scroll);}
+          private void save(){int d=2;try{d=Integer.parseInt(delay.getText().toString().trim());}catch(Exception ignored){}d=Math.max(0,Math.min(20,d));repo.save(autoAnswer.isChecked(),speakerPrompt.isChecked(),d,welcome.getText().toString().trim(),fees.getText().toString().trim(),schedule.getText().toString().trim(),registration.getText().toString().trim());Toast.makeText(this,"تم الحفظ",Toast.LENGTH_SHORT).show();updateStatus();}
+          private void showIvrTest(){String[] items={"1 — الرسوم","2 — المواعيد","3 — التسجيل"};speak(repo.welcome());new AlertDialog.Builder(this).setTitle("اختبار القائمة").setItems(items,(d,w)->{String m=w==0?repo.fees():w==1?repo.schedule():repo.registration();speak(m);new AlertDialog.Builder(this).setMessage(m).setPositiveButton("حسناً",null).show();}).setNegativeButton("إغلاق",null).show();}
+          private void speak(String s){if(tts!=null){try{tts.stop();tts.shutdown();}catch(Exception ignored){}}tts=new TextToSpeech(this,st->{if(st==TextToSpeech.SUCCESS){tts.setLanguage(new Locale("ar"));tts.speak(s,TextToSpeech.QUEUE_FLUSH,null,"ivr_test");}});}
+          private void requestDialerRole(){if(Build.VERSION.SDK_INT>=29){RoleManager rm=getSystemService(RoleManager.class);if(rm!=null&&rm.isRoleAvailable(RoleManager.ROLE_DIALER)){if(rm.isRoleHeld(RoleManager.ROLE_DIALER))Toast.makeText(this,"وضع الهاتف مفعّل بالفعل",Toast.LENGTH_SHORT).show();else startActivityForResult(rm.createRequestRoleIntent(RoleManager.ROLE_DIALER),44);}}else{TelecomManager tm=(TelecomManager)getSystemService(TELECOM_SERVICE);Intent i=new Intent(TelecomManager.ACTION_CHANGE_DEFAULT_DIALER);i.putExtra(TelecomManager.EXTRA_CHANGE_DEFAULT_DIALER_PACKAGE_NAME,getPackageName());startActivityForResult(i,44);}}
+          private boolean isDefaultDialer(){if(Build.VERSION.SDK_INT>=29){RoleManager rm=getSystemService(RoleManager.class);return rm!=null&&rm.isRoleHeld(RoleManager.ROLE_DIALER);}TelecomManager tm=(TelecomManager)getSystemService(TELECOM_SERVICE);return tm!=null&&getPackageName().equals(tm.getDefaultDialerPackage());}
+          private void updateStatus(){status.setText("حالة النسخة:\n• لا توجد صلاحيات ميكروفون.\n• لا توجد خدمة إمكانية وصول.\n• لا توجد صلاحيات إشعارات أو قراءة الهاتف.\n• وضع الهاتف: "+(isDefaultDialer()?"مفعّل ✓":"غير مفعّل")+"\n\nلن يظهر أي طلب عند أول تشغيل. زر تفعيل وضع الهاتف وحده يفتح اختيار النظام عند ضغطك عليه.");}
+          @Override protected void onResume(){super.onResume();if(status!=null)updateStatus();} @Override protected void onDestroy(){if(tts!=null){try{tts.shutdown();}catch(Exception ignored){}}super.onDestroy();}}
           EOF
-
           cat > /tmp/schoolivr_v4/app/src/main/java/com/school/ivrsmart/DialerActivity.java <<'EOF'
-          package com.school.ivrsmart;
-          import android.app.Activity; import android.os.Bundle; import android.view.Gravity; import android.widget.TextView;
-          public class DialerActivity extends Activity { @Override protected void onCreate(Bundle b){ super.onCreate(b); TextView t=new TextView(this); t.setText("School IVR Smart\n\nهذه شاشة وضع الهاتف الخاصة بنظام الرد الآلي."); t.setTextSize(22); t.setGravity(Gravity.CENTER); t.setPadding(30,30,30,30); setContentView(t); } }
+          package com.school.ivrsmart; import android.app.Activity; import android.os.Bundle; import android.view.Gravity; import android.widget.TextView; public class DialerActivity extends Activity{@Override protected void onCreate(Bundle b){super.onCreate(b);TextView t=new TextView(this);t.setText("School IVR Smart\n\nهذه شاشة وضع الهاتف الخاصة بنظام الرد الآلي.");t.setTextSize(22);t.setGravity(Gravity.CENTER);t.setPadding(30,30,30,30);setContentView(t);}}
           EOF
-
           cat > /tmp/schoolivr_v4/app/src/main/java/com/school/ivrsmart/SchoolInCallService.java <<'EOF'
-          package com.school.ivrsmart;
-          import android.os.Handler; import android.os.Looper; import android.speech.tts.TextToSpeech; import android.telecom.Call; import android.telecom.CallAudioState; import android.telecom.InCallService; import android.telecom.VideoProfile; import java.util.Locale;
-          public class SchoolInCallService extends InCallService {
-              private final Handler h=new Handler(Looper.getMainLooper()); private TextToSpeech tts;
-              @Override public void onCallAdded(Call call){ super.onCallAdded(call); SettingsRepository r=new SettingsRepository(this); if(r.autoAnswer()&&call.getState()==Call.STATE_RINGING){ h.postDelayed(()->{ if(call.getState()==Call.STATE_RINGING){ try{ call.answer(VideoProfile.STATE_AUDIO_ONLY); if(r.speakerPrompt())h.postDelayed(()->speakOnSpeaker(r.welcome()),900); }catch(Exception ignored){} } },r.delay()*1000L); } }
-              private void speakOnSpeaker(String msg){ try{setAudioRoute(CallAudioState.ROUTE_SPEAKER);}catch(Exception ignored){} if(tts!=null){try{tts.shutdown();}catch(Exception ignored){}} tts=new TextToSpeech(this,st->{ if(st==TextToSpeech.SUCCESS){tts.setLanguage(new Locale("ar"));tts.speak(msg,TextToSpeech.QUEUE_FLUSH,null,"incoming_welcome");}}); }
-              @Override public void onCallRemoved(Call call){ if(tts!=null){try{tts.stop();tts.shutdown();}catch(Exception ignored){}tts=null;} super.onCallRemoved(call); }
-          }
+          package com.school.ivrsmart; import android.os.*; import android.speech.tts.TextToSpeech; import android.telecom.*; import java.util.Locale; public class SchoolInCallService extends InCallService{private final Handler h=new Handler(Looper.getMainLooper());private TextToSpeech tts;@Override public void onCallAdded(Call c){super.onCallAdded(c);SettingsRepository r=new SettingsRepository(this);if(r.autoAnswer()&&c.getState()==Call.STATE_RINGING){h.postDelayed(()->{if(c.getState()==Call.STATE_RINGING){try{c.answer(VideoProfile.STATE_AUDIO_ONLY);if(r.speakerPrompt())h.postDelayed(()->speak(r.welcome()),900);}catch(Exception ignored){}}},r.delay()*1000L);}}private void speak(String m){try{setAudioRoute(CallAudioState.ROUTE_SPEAKER);}catch(Exception ignored){}if(tts!=null){try{tts.shutdown();}catch(Exception ignored){}}tts=new TextToSpeech(this,s->{if(s==TextToSpeech.SUCCESS){tts.setLanguage(new Locale("ar"));tts.speak(m,TextToSpeech.QUEUE_FLUSH,null,"incoming_welcome");}});}@Override public void onCallRemoved(Call c){if(tts!=null){try{tts.stop();tts.shutdown();}catch(Exception ignored){}tts=null;}super.onCallRemoved(c);}}
           EOF
-
       - name: Build debug APK
         working-directory: /tmp/schoolivr_v4
         run: gradle assembleDebug --stacktrace
